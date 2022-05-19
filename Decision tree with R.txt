@@ -1,0 +1,106 @@
+TITLE:
+Classification of Vehicle Appraisal Data Set Using Decision Tree Algorithm.
+
+
+ABSTRACT
+In this study, to purchase or not purchase a vehicle is centred on its physical qualifications. 
+Using the six attributes, each car will be evaluated as unacceptable, acceptable, good, 
+or very good facts provided by the data set.
+
+The "Vehicle Appraisal Data Set " is divided into four categories: very good, good, acceptable, and unacceptable cars, 
+based on six separate attributes: purchase price(buying), maintenance cost (maint), amount of doors(doors), 
+passenger capacity(persons), storage boot size(lugboot), overall safety level of each vehicle(safety), 
+with a 73.5% average accuracy. 
+
+From the results of this R implementation Safety is the most important factor for car purchasers. 
+If a customer believes a car is unsafe, they won't purchase it. The number of passengers it can carry is also important; 
+if a vehicle has seats for four people and more, clients in the data set are unlikely to purchase it. 
+Cost of maintenance are a factor if it is less. If the Cost of maintenance is modest, the purchase price is considered.
+
+
+
+#IMPORTING DATASET
+Cars<-read.csv("cars_dat.csv",header=TRUE) 
+
+#INSPECTING DATASET
+names(Cars)
+head(Cars)
+str(Cars)
+class(Cars)
+anyNA(Cars)
+
+#TRANSFORMING TARGET VARIABLE (CLASSVALUES) AS VECTOR
+classvalues<-as.vector(Cars$classvalues)
+
+#CONFIRMING CLASSVALUES AS A VECTOR
+is.vector(classvalues)
+classvalues
+
+#INSTALLING CARET
+install.packages("caret")
+
+#LOADING THE INSTALLED PACKAGE
+library(caret)
+
+#INSTALLING RPART
+install.packages("rpart")
+
+#LOADING THE INSTALLED PACKAGE
+library(rpart)
+
+set.seed(150)
+
+#dividing data into training and test sets
+train_test_split<-createDataPartition(y=classvalues,p=0.7,list=FALSE)
+
+#assigning 30% of data to test set
+test_set<-Cars[-train_test_split,]
+
+#assigning 70% of data to train set
+train_set<-Cars[train_test_split,]
+
+#inspecting train set
+summary(train_set)
+dim(train_set)
+
+#inspecting test set
+summary(test_set)
+dim(test_set)
+
+#Creating decision tree models
+decision_tree<-rpart(classvalues~buying+maint+doors+persons+lugboot,data=train_set,method="class")
+
+#view decision tree
+decision_tree
+
+#plot decision tree
+rpart.plot::rpart.plot(decision_tree)
+
+#predictiion of train set
+train_pred<-predict(decision_tree,train_set, type = 'class')
+
+#inspecting prediction
+head(train_pred)
+
+#creating traintable
+traintable<-table(train_pred,train_set$classvalues)
+
+#accuracy of train table
+accuracy_train<-sum(diag(traintable)/sum(traintable))
+accuracy_train
+#
+errorrate_train<-1-accuracy_train
+errorrate_train
+
+#
+test_pred<-predict(decision_tree,test_set, type = 'class')
+#
+testtable<-table(test_pred,test_set$classvalues)
+
+#
+accuracy_test<-sum(diag(testtable)/sum(testtable))
+accuracy_test
+
+#
+errorrate_test<-1-accuracy_test
+errorrate_test
